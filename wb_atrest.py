@@ -109,7 +109,7 @@ def derive_key_id(key):
 def is_envelope(value):
     """是不是一个 `$wbEncrypted` 信封（而不是明文 token）。"""
     if isinstance(value, dict):
-        return isinstance(value.get("envelope"), str) and ENVELOPE_KEY in value
+        return ENVELOPE_KEY in value
     if isinstance(value, str):
         # 老版本曾把整个信封 JSON 序列化成字符串塞进字段里
         stripped = value.lstrip()
@@ -119,6 +119,11 @@ def is_envelope(value):
 
 def parse_envelope(value):
     """把 envelope（base64 字符串或 `$wbEncrypted` 字典）拆成 GCM 三段。"""
+    if isinstance(value, str) and value.lstrip().startswith("{"):
+        try:
+            value = json.loads(value)
+        except (ValueError, TypeError) as exc:
+            raise AtRestError("envelope 不是有效 JSON") from exc
     if isinstance(value, dict):
         value = value.get("envelope") or ""
     try:
@@ -738,18 +743,18 @@ _KEY_LOCK = threading.Lock()
 
 
 def cached_key():
-    """取进程内缓存的密钥（顺带用 keyblob 复核一次，客户端换钥即失效）。"""
+    """用缓存的包装密钥解出主密钥；当前 keyblob 不再匹配时让缓存失效。"""
     with _KEY_LOCK:
         key = _KEY_CACHE["key"]
     if not key:
         return None
     try:
-        unwrap_keyblob(key)
+        master = unwrap_keyblob(key)
     except Exception:
         with _KEY_LOCK:
             _KEY_CACHE["key"] = None
         return None
-    return key
+    return master
 
 
 def forget_key():
@@ -760,21 +765,21 @@ def forget_key():
 
 
 def recover_key(force=False, log=None):
-    """拿到可用密钥：内存缓存 ->（必要时）进程内存现场回收。失败抛 AtRestError。"""
+    """拿到字段主密钥：校验缓存或回收包装密钥，再解包 keyblob。失败抛 AtRestError。"""
     if not force:
         cached = cached_key()
         if cached:
             return cached
     key_hex = hunt_key(log=log)
     key = bytes.fromhex(key_hex)
-    unwrap_keyblob(key)          # 自检 1+2 不过就别留下
+    master = unwrap_keyblob(key)  # 缓存包装密钥，向字段解密调用方返回主密钥
     with _KEY_LOCK:
         _KEY_CACHE["key"] = key
         _KEY_CACHE["recoveredAt"] = time.time()
     if log:
         log("已从 WorkBuddy.exe 内存回收 at-rest 密钥（keyId=%s），仅保存在内存中"
             % derive_key_id(key))
-    return key
+    return master
 
 
 def status():

@@ -233,16 +233,24 @@ def _safe_auth_file_meta(path: Path, existing_uids: set[str]) -> dict:
 
     account = data.get("account", {}) if isinstance(data, dict) else {}
     auth = data.get("auth", {}) if isinstance(data, dict) else {}
+    if not isinstance(account, dict) or not isinstance(auth, dict):
+        meta["reason"] = "account/auth 必须是 JSON 对象"
+        return meta
     if not auth.get("accessToken"):
         meta["reason"] = "未发现 accessToken"
         return meta
 
     uid = account.get("uid", "")
     # 昵称在建号时也可能是 at-rest 信封（国内版），展示前先解出来；解不出来就退回文件名。
-    shown, atrest_err = resolve_atrest_fields({"nickname": account.get("nickname", "")})
+    shown, atrest_err = resolve_atrest_fields({
+        "nickname": account.get("nickname", ""),
+        "phone": account.get("phoneNumber", ""),
+        "access_token": auth.get("accessToken", ""),
+        "refresh_token": auth.get("refreshToken", ""),
+    })
     meta.update({
-        "valid": True,
-        "reason": atrest_err or "ok",
+        "valid": bool(shown.get("access_token")) and not atrest_err,
+        "reason": atrest_err or ("ok" if shown.get("access_token") else "未发现可用 accessToken"),
         "account_name": shown.get("nickname") or path.stem,
         "uid_masked": _mask_value(uid),
         "domain": auth.get("domain", DEFAULT_DOMAIN),
@@ -294,15 +302,12 @@ def discover_auth_files(auth_dir: Optional[str] = None) -> dict:
 
 
 def _atrest():
-    """懒加载 wb_atrest（桌面端 at-rest 信封解密）。模块缺失或非 Windows 返回 None。"""
+    """懒加载 wb_atrest（桌面端 at-rest 信封解密），不可用时返回 None。"""
     try:
         import wb_atrest  # 本机可选模块，仓库里随 wb_switch 一起带
         return wb_atrest
     except Exception:
         return None
-
-
-_atrest_state: dict = {"key": None, "error": ""}
 
 
 def resolve_atrest_fields(values: dict) -> tuple[dict, str]:
@@ -312,37 +317,40 @@ def resolve_atrest_fields(values: dict) -> tuple[dict, str]:
     处理。★绝不能把信封 dict 交给下游 credential_crypto（会 AttributeError 崩扫描）。
     密钥来源：正在运行的 WorkBuddy 客户端进程内存，回收一次后进程内缓存。
     """
+    # 所有出口都只允许字符串进入凭据存储，包括不完整的信封或其他异常 JSON 值。
+    plain = {k: v if isinstance(v, str) else "" for k, v in values.items()}
     mod = _atrest()
     if mod is None:
+        encrypted = any(isinstance(v, dict) and "$wbEncrypted" in v
+                        or isinstance(v, str) and "$wbEncrypted" in v
+                        for v in values.values())
         return (
-            {k: ("" if isinstance(v, (dict, list)) else v) for k, v in values.items()},
-            "未找到 wb_atrest 模块",
+            {k: ("" if isinstance(v, str) and "$wbEncrypted" in v else plain[k])
+             for k, v in values.items()},
+            "未找到 wb_atrest 模块" if encrypted else "",
         )
     if not any(mod.is_envelope(v) for v in values.values()):
-        return values, ""
-    key = _atrest_state.get("key")
-    if key is None:
-        try:
-            key = mod.recover_key()
-            _atrest_state["key"] = key
-            _atrest_state["error"] = ""
-        except Exception as exc:
-            _atrest_state["error"] = f"at-rest 密钥回收失败（客户端没在跑？）: {exc}"
-            return (
-                {k: ("" if mod.is_envelope(v) else v) for k, v in values.items()},
-                _atrest_state["error"],
-            )
+        return plain, ""
+    try:
+        # wb_atrest 负责唯一的密钥缓存，并在每次使用前校验当前 keyblob。
+        key = mod.recover_key()
+    except Exception as exc:
+        return (
+            {k: ("" if mod.is_envelope(v) else plain[k]) for k, v in values.items()},
+            f"at-rest 密钥回收失败（客户端没在跑？）: {exc}",
+        )
     out = {}
+    errors = []
     for name, value in values.items():
         if mod.is_envelope(value):
             try:
                 out[name] = mod.decrypt_field(key, value) or ""
             except Exception as exc:
-                _atrest_state["error"] = f"{name} 解密失败: {exc}"
+                errors.append(f"{name} 解密失败: {exc}")
                 out[name] = ""
         else:
             out[name] = value if isinstance(value, str) else ""
-    return out, _atrest_state.get("error", "")
+    return out, "; ".join(errors)
 
 
 def parse_auth_file(path: Path) -> Optional[dict]:
@@ -353,8 +361,12 @@ def parse_auth_file(path: Path) -> Optional[dict]:
     except (json.JSONDecodeError, OSError):
         return None
 
+    if not isinstance(data, dict):
+        return None
     account = data.get("account", {})
     auth = data.get("auth", {})
+    if not isinstance(account, dict) or not isinstance(auth, dict):
+        return None
     if not auth.get("accessToken"):
         return None
 
@@ -370,7 +382,7 @@ def parse_auth_file(path: Path) -> Optional[dict]:
             "refresh_token": auth.get("refreshToken", ""),
         }
     )
-    if not fields.get("access_token"):
+    if _err or not fields.get("access_token"):
         return None
     session_state = auth.get("sessionState", "")
     if not isinstance(session_state, str):
