@@ -170,3 +170,7 @@ def test_create_key_form_defaults_to_auto_channel():
     assert "f.channel='*'" in html
     assert "channel:'workbuddy'}),res" not in html
     assert "f.channel='workbuddy'" not in html
+    assert "modal key-create" in html
+    assert "channel-hint" in html
+    assert "keys-channel" in html
+    assert 'style="max-width:560px"' not in html
