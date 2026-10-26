@@ -209,6 +209,10 @@ badge,.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;bord
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:1000;display:flex;align-items:center;justify-content:center}
 .modal{background:#fff;border-radius:var(--r);width:460px;max-width:92vw;max-height:85vh;overflow:hidden;display:flex;flex-direction:column;border:1px solid var(--border)}
 .modal.wide{width:900px}
+.modal.key-create{width:min(680px,calc(100vw - 32px))}
+.modal.key-create .channel-select{width:100%;height:auto;min-height:38px;padding:8px 36px 8px 12px;line-height:1.5}
+.modal.key-create .channel-hint{display:block;margin-top:8px;line-height:1.7;white-space:normal;overflow:visible;overflow-wrap:anywhere}
+.keys-channel{width:180px;min-width:180px;padding-right:28px}
 .modal-h{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
 .modal-h h3{font-size:15px;font-weight:700}
 .modal-h .x{border:none;background:none;font-size:20px;cursor:pointer;color:var(--fg3);padding:0 4px;line-height:1}
@@ -280,10 +284,12 @@ body{background:#e9e9e6;letter-spacing:0;overflow-x:hidden}
 .topnav .nav-item.on::after{content:'';position:absolute;left:10px;right:10px;bottom:-1px;height:2px;background:var(--accent)}
 .topnav .nav-item{position:relative}.topnav .nav-item svg{width:14px;height:14px;opacity:.8}.topnav .nav-item.on svg{color:var(--accent);opacity:1}
 .top-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;min-width:0}
-.refresh-cta{height:40px;border:1px solid #ef6a25;background:var(--accent);color:#fff;border-radius:7px;padding:0 14px;font:inherit;font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:7px;cursor:pointer;white-space:nowrap}
-.refresh-cta:hover{background:var(--accent-strong)}.refresh-cta svg{width:15px;height:15px}
 .update-cta{height:40px;border:1px solid var(--accent-border);background:var(--accent-soft);color:var(--accent-strong);border-radius:7px;padding:0 14px;font:inherit;font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:7px;cursor:pointer;white-space:nowrap}
 .update-cta:hover{background:#ffe3c4;border-color:var(--accent);color:var(--accent-strong)}.update-cta svg{width:15px;height:15px}.update-cta:disabled{opacity:.65;cursor:wait}
+.check-cta{height:40px;border:1px solid #47423b;background:#2c2a27;color:#fff;border-radius:7px;padding:0 14px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+.check-cta:hover{border-color:var(--accent);color:var(--accent)}.check-cta:disabled{opacity:.65;cursor:wait}
+.stop-cta{height:40px;border:1px solid #edc3bd;background:#fff;color:var(--red);border-radius:7px;padding:0 14px;font:inherit;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+.stop-cta:hover{background:var(--red-bg);border-color:var(--red)}.stop-cta:disabled{opacity:.65;cursor:wait}
 .main{margin-left:0;min-width:0}.content{padding:18px;max-width:1600px;margin:0 auto}
 .phead{margin:0 0 12px;display:flex;align-items:baseline;gap:12px}.phead h1{font-size:21px;font-weight:800}.phead p{font-size:12px;color:var(--fg3);margin:0}
 .tbar{min-height:42px;margin-bottom:12px;padding:6px 8px;background:#f5f5f2;border:1px solid var(--border);border-radius:7px}
@@ -416,10 +422,11 @@ html[data-theme="gold"] .topnav .nav-item{color:#9a9a9a}
 html[data-theme="gold"] .topnav .nav-item:hover{background:#1c1c1c;color:#f5f5f5}
 html[data-theme="gold"] .topnav .nav-item.on{background:#242424;border-color:#6d5a1e;color:#f5f5f5}
 html[data-theme="gold"] .theme-cta{background:#1a160e;border-color:rgba(232,197,71,.45);color:#e8c547}
-html[data-theme="gold"] .refresh-cta{border-color:#c9a227;background:#e8c547;color:#1a160e}
-html[data-theme="gold"] .refresh-cta:hover{background:#c9a227;color:#1a160e}
+html[data-theme="gold"] .check-cta{background:#1a160e;border-color:rgba(232,197,71,.45);color:#e8c547}
 html[data-theme="gold"] .update-cta{background:#2a2412;border-color:#6d5a1e;color:#e8c547}
 html[data-theme="gold"] .update-cta:hover{background:#3a3218;color:#ffe08a}
+html[data-theme="gold"] .stop-cta{background:#1c1c1c;color:#ff8585;border-color:#5a3030}
+html[data-theme="gold"] .stop-cta:hover{background:#2a1414}
 html[data-theme="gold"] .tbar,
 html[data-theme="gold"] .card,
 html[data-theme="gold"] .today-usage,
@@ -502,7 +509,7 @@ html[data-theme="gold"] .badge.err{background:#2a1414;color:#ffb4b4;border-color
 }
 @media (max-width:760px){
   .topbar{position:sticky;grid-template-columns:1fr auto;padding:9px 10px}.brand-symbol{width:30px;height:30px}.brand-title{font-size:15px}.brand-meta{display:none}
-  .top-actions{gap:5px}.refresh-cta{width:36px;height:36px;padding:0;justify-content:center}.refresh-cta span:last-child{display:none}.update-cta{height:36px;padding:0 10px;font-size:11px}
+  .top-actions{gap:5px}.update-cta,.check-cta,.stop-cta,.theme-cta{height:36px;padding:0 10px;font-size:11px}
   .topnav{margin:0 -10px -9px;padding:6px 10px;background:#171614}.topnav .nav-item{padding:7px 9px}.topnav .nav-item span{display:none}
   .content{padding:10px}.phead{display:block;margin-bottom:9px}.phead h1{font-size:18px}.phead p{margin-top:2px}.tbar{align-items:stretch;overflow-x:auto;flex-wrap:nowrap}
   .today-usage-head{padding:10px 12px;display:grid;justify-content:stretch;gap:7px}.today-period{justify-self:stretch;text-align:left}.period-tools{display:flex;grid-template-columns:none;width:100%;justify-content:stretch}.period-seg{display:flex;width:100%}.period-seg button{flex:1}.account-tbar,.account-actions,.detect-actions{width:100%}.detect-actions{margin-left:0}.account-tbar-meta{justify-content:flex-start}.today-metrics{grid-template-columns:1fr 1fr}.today-metric{padding:13px 12px}.today-metric:nth-child(2){border-right:0}.today-metric:last-child{grid-column:1/-1;border-top:1px solid var(--border2)}.today-value{font-size:25px}.today-meta{white-space:normal;min-height:31px}
@@ -554,12 +561,23 @@ createApp({
     const validPages=['accounts','dashboard','keys','models','logs','settings'];
     const savedPage=localStorage.getItem('cb_gw_page');
     const page=ref(validPages.includes(savedPage)?savedPage:'accounts'),token=ref(localStorage.getItem('cb_gw_token')||''),toasts=ref([]);
-    const ver=ref(null),updating=ref(false);
+    const ver=ref(null),updating=ref(false),shutting=ref(false),checking=ref(false);
+    async function shutdownGateway(){
+      if(shutting.value)return;
+      if(!confirm('关闭 Buddy2api？正在进行的请求会中断。关闭后这个页面会打不开，下次请重新运行 start.bat。'))return;
+      shutting.value=true;
+      try{
+        const r=await api.post('/admin/shutdown',{},token.value);
+        tf(r.message||(r.ok?'正在关闭':'关闭失败'), r.ok?'info':'err');
+        if(!r.ok)shutting.value=false;
+      }catch(e){tf(apiErr(e,'关闭失败'),'err');shutting.value=false}
+    }
     function tf(m,t='ok'){const id=Date.now()+Math.random();toasts.value=[...toasts.value,{id,m,t}].slice(-4);setTimeout(()=>toasts.value=toasts.value.filter(x=>x.id!==id),2500)}
     function go(k){page.value=k;localStorage.setItem('cb_gw_page',k)}
     function saveToken(value){token.value=value.trim();if(token.value)localStorage.setItem('cb_gw_token',token.value);else localStorage.removeItem('cb_gw_token');tf(token.value?'备用 Admin Token 已保存':'备用 Admin Token 已清除')}
-    function hardRefresh(){window.location.reload()}
     async function checkVer(force=false){
+      if(checking.value)return;
+      if(force)checking.value=true;
       try{
         const r=await api.get('/admin/version'+(force?'?refresh=1':''),token.value);
         ver.value=r;
@@ -569,6 +587,7 @@ createApp({
           else tf('已是最新版本 v'+r.current);
         }
       }catch(e){if(force)tf('暂时查不到远端版本','info')}
+      if(force)checking.value=false;
     }
     async function applyUpdate(){
       if(updating.value||!ver.value||!ver.value.update_available)return;
@@ -597,7 +616,7 @@ createApp({
     const nav=[{k:'accounts',l:'账号管理',i:I.users},{k:'dashboard',l:'Dashboard',i:I.dash},{k:'keys',l:'API Keys',i:I.key},{k:'models',l:'模型配置',i:I.cpu},{k:'logs',l:'请求日志',i:I.log},{k:'settings',l:'设置',i:I.gear}];
     function toggleTheme(){applyTheme(uiTheme.value==='gold'?'warm':'gold')}
     onMounted(()=>checkVer(false));
-    return{page,token,toasts,tf,go,saveToken,hardRefresh,nav,I,ver,updating,checkVer,applyUpdate,uiTheme,toggleTheme}
+    return{page,token,toasts,tf,go,saveToken,nav,I,ver,updating,checking,checkVer,applyUpdate,uiTheme,toggleTheme,shutting,shutdownGateway}
   },
   template:`
   <div class="layout">
@@ -606,8 +625,9 @@ createApp({
       <nav class="topnav"><div v-for="n in nav" :key="n.k" class="nav-item" :class="{on:page===n.k}" @click="go(n.k)" v-html="n.i+'<span>'+n.l+'</span>'"></div></nav>
       <div class="top-actions">
         <button class="theme-cta" @click="toggleTheme">{{uiTheme==='gold'?'暖色':'黑金'}}</button>
+        <button class="check-cta" @click="checkVer(true)" :disabled="checking||updating">{{checking?'检查中':'检查更新'}}</button>
         <button v-if="ver&&ver.update_available" class="update-cta" :disabled="updating" @click="applyUpdate"><span v-html="I.refresh"></span><span>{{updating?'更新中':'更新到 v'+ver.latest}}</span></button>
-        <button class="refresh-cta" @click="hardRefresh"><span v-html="I.refresh"></span><span>刷新</span></button>
+        <button class="stop-cta" @click="shutdownGateway" :disabled="shutting">{{shutting?'关闭中':'关闭'}}</button>
       </div>
     </header>
     <div class="main">
@@ -1157,16 +1177,16 @@ createApp({
   <div class="callout" v-if="legacyKeys.length" style="margin-bottom:12px">有 {{legacyKeys.length}} 把旧的 Codex 类型 Key。更新后字符串不变，客户端不用改配置，只是不再按类型裁超长历史。<button class="btn s" style="margin-left:8px" @click="updateLegacyKeys" :disabled="updatingLegacy">{{updatingLegacy?'更新中':'更新为普通 Key'}}</button></div>
   <div v-if="ld" class="load"><div class="spin"></div></div>
   <div class="card" v-else-if="l.length"><table><thead><tr><th>名称</th><th>通道</th><th>Key</th><th>状态</th><th>模型</th><th>今日/限额</th><th>请求</th><th>Token</th><th></th></tr></thead><tbody>
-    <tr v-for="k in l" :key="k.id"><td style="font-weight:600">{{k.name||'-'}}</td><td><select class="selectctl" :value="k.default_channel||'workbuddy'" @change="setChannel(k,$event.target.value)" :disabled="busyKey(k.id,'ch')"><option v-for="c in channelOptions()" :key="c.id" :value="c.id">{{c.display_name||c.id}}</option></select></td><td><div style="display:flex;align-items:center;gap:5px;min-width:230px"><code style="flex:1;word-break:break-all">{{shown[k.id]&&k.key?k.key:(k.key_prefix||'-')}}</code><button v-if="k.key" class="btn s" @click="toggleKey(k)">{{shown[k.id]?'隐藏':'显示'}}</button><button v-if="k.key" class="btn s" @click="cp(k.key)" title="复制完整 API Key"><span v-html="I.copy"></span></button><span v-else class="tag" title="旧版本只保存了哈希，无法还原原始 Key">旧 Key 不可恢复</span></div></td><td><span class="badge" :class="k.status">{{k.status}}</span></td><td>{{k.allowed_models?k.allowed_models.join(', '):'全部'}}</td><td>{{k.today_requests||0}} / {{k.daily_limit||'不限'}}</td><td>{{k.total_requests}}</td><td>{{tok(k.total_tokens)}}</td><td><button class="btn s" @click="toggle(k)" :disabled="busyKey(k.id,'toggle')" style="margin-right:4px">{{busyKey(k.id,'toggle')?'...':(k.status==='active'?'禁用':'启用')}}</button><button class="btn s danger" @click="del(k)" :disabled="busyKey(k.id,'del')">{{busyKey(k.id,'del')?'...':'删除'}}</button></td></tr>
+    <tr v-for="k in l" :key="k.id"><td style="font-weight:600">{{k.name||'-'}}</td><td><select class="selectctl keys-channel" :value="k.default_channel||'workbuddy'" @change="setChannel(k,$event.target.value)" :disabled="busyKey(k.id,'ch')"><option v-for="c in channelOptions()" :key="c.id" :value="c.id">{{c.display_name||c.id}}</option></select></td><td><div style="display:flex;align-items:center;gap:5px;min-width:230px"><code style="flex:1;word-break:break-all">{{shown[k.id]&&k.key?k.key:(k.key_prefix||'-')}}</code><button v-if="k.key" class="btn s" @click="toggleKey(k)">{{shown[k.id]?'隐藏':'显示'}}</button><button v-if="k.key" class="btn s" @click="cp(k.key)" title="复制完整 API Key"><span v-html="I.copy"></span></button><span v-else class="tag" title="旧版本只保存了哈希，无法还原原始 Key">旧 Key 不可恢复</span></div></td><td><span class="badge" :class="k.status">{{k.status}}</span></td><td>{{k.allowed_models?k.allowed_models.join(', '):'全部'}}</td><td>{{k.today_requests||0}} / {{k.daily_limit||'不限'}}</td><td>{{k.total_requests}}</td><td>{{tok(k.total_tokens)}}</td><td><button class="btn s" @click="toggle(k)" :disabled="busyKey(k.id,'toggle')" style="margin-right:4px">{{busyKey(k.id,'toggle')?'...':(k.status==='active'?'禁用':'启用')}}</button><button class="btn s danger" @click="del(k)" :disabled="busyKey(k.id,'del')">{{busyKey(k.id,'del')?'...':'删除'}}</button></td></tr>
   </tbody></table></div>
   <div class="card card-p empty" v-else><div class="em">🔑</div><p>暂无 Key</p></div>
 
-  <div class="ov" v-if="sa" @click.self="close"><div class="modal" style="max-width:560px"><div class="modal-h"><h3>创建 Key</h3><button class="x" @click="close">&times;</button></div><div class="modal-b">
+  <div class="ov" v-if="sa" @click.self="close"><div class="modal key-create"><div class="modal-h"><h3>创建 Key</h3><button class="x" @click="close">&times;</button></div><div class="modal-b">
     <template v-if="res">
       <div class="field"><label>新 Key</label><div class="keybox">{{res}}</div><button class="btn s pri" style="margin-top:8px" @click="cp(res)">{{copied?'已复制':'复制 Key'}}</button><div class="hint" style="margin-top:6px">关闭后仍可在 API Keys 列表中查看和复制。客户端接入示例在设置页。</div></div>
     </template>
     <template v-else>
-      <div class="field"><label>通道</label><select class="selectctl" v-model="f.channel"><option v-for="c in channelOptions()" :key="c.id" :value="c.id">{{c.display_name||c.id}}</option></select><div class="hint">选具体通道时，这把 Key 只打那一家。选「自动通道」后，带前缀的 <span class="mono">通道/模型</span> 打到对应通道；不带前缀的模型进第一家认得它且已有账号的通道；<span class="mono">auto</span> 走第一个有可用账号的通道。额度用尽不会换到另一家。可在列表里切换；进行中的请求不会改绑。</div></div>
+      <div class="field"><label>通道</label><select class="selectctl channel-select" v-model="f.channel"><option v-for="c in channelOptions()" :key="c.id" :value="c.id">{{c.display_name||c.id}}</option></select><div class="hint channel-hint">选具体通道时，这把 Key 只打那一家。选「自动通道」后，带前缀的 <span class="mono">通道/模型</span> 打到对应通道；不带前缀的模型进第一家认得它且已有账号的通道；<span class="mono">auto</span> 走第一个有可用账号的通道。额度用尽不会换到另一家。可在列表里切换；进行中的请求不会改绑。</div></div>
       <div class="field"><label>名称</label><input v-model="f.name" placeholder="Key 名称"/></div>
       <div class="field"><label>允许模型</label><input v-model="f.models" placeholder="auto,glm-5.2（留空=全部）"/></div>
       <div class="field"><label>每日请求限额</label><input v-model="f.limit" type="number" placeholder="不限"/></div>
@@ -1447,7 +1467,6 @@ createApp({
             <div class="metric"><div class="m-label">请求</div><div class="m-value">{{n(stats?.total_requests)}}</div><div class="m-sub">all time</div></div>
           </div>
           <div class="status-line" style="margin-top:12px"><span class="badge" :class="stats?.active_accounts?'ok':'err'">Accounts</span><span class="badge" :class="stats?.active_keys?'ok':'err'">Keys</span><span class="tag">Timeout {{s.timeout}}s</span><span class="tag">v{{ver?.current||'__APP_VERSION__'}}</span><span class="tag warn" v-if="ver?.update_available">新版本 {{ver.latest}}</span></div>
-          <div class="status-line" style="margin-top:10px"><button class="btn s" @click="checkVer(true)" :disabled="updating">检查更新</button><button class="btn s pri" v-if="ver?.update_available" @click="applyUpdate" :disabled="updating">{{updating?'更新中':'一键更新到 v'+ver.latest}}</button></div>
         </div>
       </div>
     </div>
