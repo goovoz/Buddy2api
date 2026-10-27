@@ -4,7 +4,7 @@
 
 > 把本机已经登录的消费级 AI 客户端，接成 OpenAI 兼容接口，给 Codex、OpenCode、Cherry Studio、NextChat 等用。默认打开 Work Buddy / CodeBuddy、Qoder、千问办公（QwenWork）、TraeWork、讯飞 Loomy、商汤小浣熊；管理页下拉选其中一个。一次请求只走一个通道。QClaw 已停止运营，通道已下架，积分请改用 WorkBuddy。
 
-当前版本 **2.2.11**。默认通道含 WorkBuddy 国内/国际、Qoder 中国/国际、千问办公、TraeWork、Loomy、小浣熊。没有登录凭证的渠道不会出现在模型列表里。这个项目只供你本人持有的账号在本机使用。不要公开部署，也不要把登录凭据、API Key、数据库文件发给别人。
+当前版本 **2.2.12**。默认通道含 WorkBuddy 国内/国际、Qoder 中国/国际、千问办公、TraeWork、Loomy、小浣熊。没有登录凭证的渠道不会出现在模型列表里。这个项目只供你本人持有的账号在本机使用。不要公开部署，也不要把登录凭据、API Key、数据库文件发给别人。
 
 **仅限自己的账号。严禁使用接码平台、批量注册或任何批量方式薅羊毛。** 不要把网关公开给别人用，也不要代领或倒卖额度。
 
@@ -18,7 +18,7 @@ Buddy2api 在本机提供 `http://127.0.0.1:8787/v1`。你在官方客户端里�
 
 Qoder 中国版读 `%APPDATA%\com.qodercn.app.stable\auth.v1.dat`，国际版读 `%APPDATA%\com.qoder.app.stable\auth.v1.dat`。两边的登录文件、模型目录和令牌不共用。额度在领取结果和官方余额里看。工具调用交回本机客户端。
 
-讯飞 Loomy 读本机 `auth-session.json`。每日额度由上游自动发放，一键领取只核对到账余额；长对话发送前按 16 万 token 预算裁旧历史。商汤小浣熊读本机 `auth.json`，一键领取会触发每日发放。两家都用自己的请求头，不走 WorkBuddy 的 CLI 指纹。
+讯飞 Loomy 读本机 `auth-session.json`。每日额度由上游自动发放，一键领取只核对到账余额；长对话发送前按 16 万 token 预算裁旧历史。商汤小浣熊读本机 `auth.json`，一键领取会触发每日发放。新版客户端在 `%USERPROFILE%\.office-raccoon\agent\config\auth.json`，旧版 `%USERPROFILE%\.box-agent\config\auth.json` 仍会扫描。文件里没有用户编号时，按登录 token 的用户标识分开保存；换号后再导入不会覆盖已经导入的另一个号。官方客户端如果在退出时作废旧登录，已保存的号仍会失效，需要在那个号还登录着的时候导入。两家都用自己的请求头，不走 WorkBuddy 的 CLI 指纹。
 
 ```powershell
 python server.py
@@ -33,7 +33,7 @@ python server.py
 | 千问办公 QwenWork | 开 | `%APPDATA%\QwenWorkCN` |
 | TraeWork | 开 | `%APPDATA%\TRAE SOLO CN\User\globalStorage`，新装 Trae 也扫 `%APPDATA%\Trae CN\User\globalStorage` |
 | 讯飞 Loomy | 开 | `%PUBLIC%\Loomy\*\userData\auth-session.json` |
-| 商汤小浣熊 | 开 | `%USERPROFILE%\.box-agent\config\auth.json` |
+| 商汤小浣熊 | 开 | `%USERPROFILE%\.office-raccoon\agent\config\auth.json`，旧版仍读 `%USERPROFILE%\.box-agent\config\auth.json` |
 
 路径不对时可用 `CB_AUTH_DIR`、`CB_QODER_USER_DATA_DIR`、`CB_QODER_I_USER_DATA_DIR`、`CB_QWENWORK_AUTH_DIR`、`CB_TRAEWORK_AUTH_DIR`、`CB_LOOMY_AUTH_DIR`、`CB_XHX_AUTH_DIR` 指定。各通道的登录文件不要混在同一个目录。只要其中一家时，可设 `CB_GATEWAY_PROVIDERS=workbuddy` 收窄。
 
@@ -104,7 +104,7 @@ python server.py
 
 ### Docker
 
-官方镜像只发到 GitHub Container Registry，不发 Docker Hub。地址是 `ghcr.io/wicm84266964/buddy2api`，目前只有 `linux/amd64`。正式版发版成功后会推送同名标签，例如 `ghcr.io/wicm84266964/buddy2api:v2.2.11`，并移动 `latest`。预发布不移动 `latest`。请固定版本标签，不要默认追踪 `latest`。
+官方镜像只发到 GitHub Container Registry，不发 Docker Hub。地址是 `ghcr.io/wicm84266964/buddy2api`，目前只有 `linux/amd64`。正式版发版成功后会推送同名标签，例如 `ghcr.io/wicm84266964/buddy2api:v2.2.12`，并移动 `latest`。预发布不移动 `latest`。请固定版本标签，不要默认追踪 `latest`。
 
 第一次推送后，GitHub Packages 里的包可能是私有的。仓库所有者需要在包设置里把它改成公开，匿名 `docker pull` 才可用。这一步只做一次。
 
@@ -123,13 +123,13 @@ docker compose up -d
 不克隆源码时：
 
 ```powershell
-docker pull ghcr.io/wicm84266964/buddy2api:v2.2.11
+docker pull ghcr.io/wicm84266964/buddy2api:v2.2.12
 docker run -d --name buddy2api --restart unless-stopped `
   -p 127.0.0.1:8787:8787 `
   -v buddy2api-data:/app/data `
   -e CB_GATEWAY_ADMIN_TOKEN="cb-admin-请换成足够长的随机值" `
   -e CB_DOCKER=1 `
-  ghcr.io/wicm84266964/buddy2api:v2.2.11
+  ghcr.io/wicm84266964/buddy2api:v2.2.12
 ```
 
 ### 其他启动方式
@@ -290,7 +290,7 @@ QwenWork、TraeWork、Loomy、小浣熊各用自己那把 Key，不要混用。�
 | `CB_LOOMY_AUTH_DIR` | Loomy 数据根目录，下面应有 `*/userData/auth-session.json` |
 | `CB_LOOMY_CONTEXT_BUDGET` | Loomy 发送前上下文预算，默认 `160000`。`0` 关闭发送前裁剪 |
 | `CB_GATEWAY_MAX_BODY_BYTES` | 请求体上限，默认 `33554432`（32 MiB） |
-| `CB_XHX_AUTH_DIR` | 小浣熊 `auth.json` 所在目录或文件 |
+| `CB_XHX_AUTH_DIR` | 小浣熊 `auth.json` 所在目录或文件。不设时扫描新版 `.office-raccoon\agent\config\auth.json` 和旧版 `.box-agent\config\auth.json` |
 | `CB_HOST_AUTH_DIR` | Docker 脚本用的本机 WorkBuddy 目录 |
 | `CB_GATEWAY_ADMIN_TOKEN` | 固定管理 Token |
 | `CB_GATEWAY_DB_PATH` | 数据库路径 |

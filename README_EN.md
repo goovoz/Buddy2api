@@ -4,7 +4,7 @@
 
 > Local consumer AI clients → one OpenAI-compatible API for Codex, OpenCode, Cherry Studio, NextChat, and similar agents. Work Buddy / CodeBuddy, Qoder, QwenWork, TraeWork, iFlytek Loomy, and SenseTime Xiaohuanxiong are on by default; pick one in the UI dropdown. Each request stays on one channel. QClaw is retired; its credits moved to WorkBuddy.
 
-Release **2.2.11**. Default channels include WorkBuddy domestic and international, Qoder CN and international, QwenWork, TraeWork, Loomy, and Xiaohuanxiong. Channels without a stored login are omitted from the model list. Local use only, and only with accounts you personally own. Do not expose this on the public internet, and do not share credentials, API keys, or the database.
+Release **2.2.12**. Default channels include WorkBuddy domestic and international, Qoder CN and international, QwenWork, TraeWork, Loomy, and Xiaohuanxiong. Channels without a stored login are omitted from the model list. Local use only, and only with accounts you personally own. Do not expose this on the public internet, and do not share credentials, API keys, or the database.
 
 **Your own accounts only. Do not use SMS-code platforms, bulk registration, or any batch method to farm credits.** Do not expose the gateway to other people, claim rewards for them, or resell quota.
 
@@ -18,7 +18,7 @@ Five channels are on by default. A channel with no local login shows empty on Ac
 
 Qoder CN reads `%APPDATA%\com.qodercn.app.stable\auth.v1.dat`. Qoder international reads `%APPDATA%\com.qoder.app.stable\auth.v1.dat`. Their login files, model catalogs, and tokens are not interchangeable. Quota is shown from claim results and the official balance. Tool calls are returned to the local client.
 
-Loomy reads a local `auth-session.json`. Its daily balance is granted upstream; one-click claim only reads that balance. Long Loomy chats are trimmed to a 160k-token budget before send. Xiaohuanxiong reads a local `auth.json`, and one-click claim triggers the daily grant. Neither channel uses the WorkBuddy CLI header set.
+Loomy reads a local `auth-session.json`. Its daily balance is granted upstream; one-click claim only reads that balance. Long Loomy chats are trimmed to a 160k-token budget before send. Xiaohuanxiong reads a local `auth.json`, and one-click claim triggers the daily grant. The current client stores it at `%USERPROFILE%\.office-raccoon\agent\config\auth.json`; the old `%USERPROFILE%\.box-agent\config\auth.json` is still scanned. When the file has no user id, accounts are separated by the subject in the login token, so importing a second login does not replace the first. If the official client revokes the previous login on sign-out, that saved account still dies and must be imported while it is signed in. Neither channel uses the WorkBuddy CLI header set.
 
 ```powershell
 python server.py
@@ -33,7 +33,7 @@ python server.py
 | QwenWork | on | `%APPDATA%\QwenWorkCN` |
 | TraeWork | on | `%APPDATA%\TRAE SOLO CN\User\globalStorage`; newer Trae CN also uses `%APPDATA%\Trae CN\User\globalStorage` |
 | iFlytek Loomy | on | `%PUBLIC%\Loomy\*\userData\auth-session.json` |
-| SenseTime Xiaohuanxiong | on | `%USERPROFILE%\.box-agent\config\auth.json` |
+| SenseTime Xiaohuanxiong | on | `%USERPROFILE%\.office-raccoon\agent\config\auth.json`; old clients still use `%USERPROFILE%\.box-agent\config\auth.json` |
 
 Narrow with `CB_GATEWAY_PROVIDERS=workbuddy` if you only want one.
 
@@ -64,13 +64,13 @@ python server.py
 
 3. Open http://127.0.0.1:8787 → Accounts → Detect → Import → Test → API Keys (automatic channel by default; pick one channel to pin the key) → point your client at `http://127.0.0.1:8787/v1`.
 
-Windows script: `.\start.bat`. Docker helper: `.\start-docker-win.ps1` (WorkBuddy mount; use native Python for QwenWork). That helper builds from the local checkout. The prebuilt image is `ghcr.io/wicm84266964/buddy2api:v2.2.11` (`linux/amd64` only).
+Windows script: `.\start.bat`. Docker helper: `.\start-docker-win.ps1` (WorkBuddy mount; use native Python for QwenWork). That helper builds from the local checkout. The prebuilt image is `ghcr.io/wicm84266964/buddy2api:v2.2.12` (`linux/amd64` only).
 
 Later starts: `conda activate buddy2api` then `python server.py` in the project directory.
 
 ## Docker
 
-The official image is published only to GHCR, not Docker Hub: `ghcr.io/wicm84266964/buddy2api:v2.2.11`. A stable release also moves `latest`; prereleases do not. Pin the version tag. The image is `linux/amd64` only.
+The official image is published only to GHCR, not Docker Hub: `ghcr.io/wicm84266964/buddy2api:v2.2.12`. A stable release also moves `latest`; prereleases do not. Pin the version tag. The image is `linux/amd64` only.
 
 The first push can create a private GitHub Packages container. The repository owner must change that package to public once before anonymous `docker pull` works.
 
@@ -89,13 +89,13 @@ docker compose up -d
 Without cloning:
 
 ```powershell
-docker pull ghcr.io/wicm84266964/buddy2api:v2.2.11
+docker pull ghcr.io/wicm84266964/buddy2api:v2.2.12
 docker run -d --name buddy2api --restart unless-stopped `
   -p 127.0.0.1:8787:8787 `
   -v buddy2api-data:/app/data `
   -e CB_GATEWAY_ADMIN_TOKEN="cb-admin-replace-with-a-long-random-value" `
   -e CB_DOCKER=1 `
-  ghcr.io/wicm84266964/buddy2api:v2.2.11
+  ghcr.io/wicm84266964/buddy2api:v2.2.12
 ```
 
 ## FAQ
